@@ -5,15 +5,16 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/cart";
+import { WHATSAPP } from "@/lib/products";
 import { brl, deliveryFee, DELIVERY_OPTIONS, FREE_DELIVERY_FROM } from "@/lib/delivery";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Carrinho e entrega | FB Tabacaria" },
-      { name: "description", content: "Escolha entrega local em Cuiabá ou retirada na loja e veja prazos e custos." },
+      { name: "description", content: "Escolha entrega local em Cuiabá e veja prazos e custos." },
       { property: "og:title", content: "Carrinho e entrega | FB Tabacaria" },
-      { property: "og:description", content: "Entrega local em Cuiabá ou retirada na loja." },
+      { property: "og:description", content: "Entrega local em toda Cuiabá." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/checkout")({
 
 function Checkout() {
   const { lines, setQty, subtotal, clear } = useCart();
-  const [opt, setOpt] = useState("retirada");
+  const [opt, setOpt] = useState("centro");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const selected = DELIVERY_OPTIONS.find((o) => o.id === opt)!;
@@ -40,7 +41,9 @@ function Checkout() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success(`Pedido recebido, ${name}! ${selected.type === "pickup" ? "Retire na loja" : "Entrega"}: ${selected.eta}.`);
+    const msg = [`Olá! Sou ${name} e quero fazer um pedido:`, ...lines.map((l) => `• ${l.qty}x ${l.product.name} - ${brl(l.product.price * l.qty)}`), `Entrega: ${selected.label} (${fee === 0 ? "grátis" : brl(fee)}, ${selected.eta})`, `Endereço: ${address}`, `Total: ${brl(total)}`].join("\n");
+    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
+    toast.success("Pedido enviado pelo WhatsApp!");
     clear();
   };
 
@@ -61,7 +64,7 @@ function Checkout() {
           ))}
         </section>
         <section className="space-y-3">
-          <h2 className="font-display text-3xl">Como quer receber?</h2>
+          <h2 className="font-display text-3xl">Região de entrega</h2>
           {DELIVERY_OPTIONS.map((o) => {
             const f = deliveryFee(o.id, subtotal);
             return (
@@ -79,17 +82,17 @@ function Checkout() {
         </section>
         <section className="space-y-3">
           <Input required placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} />
-          {selected.type === "delivery" && <Input required placeholder="Endereço completo (rua, número, bairro)" value={address} onChange={(e) => setAddress(e.target.value)} />}
+          <Input required placeholder="Endereço completo (rua, número, bairro)" value={address} onChange={(e) => setAddress(e.target.value)} />
         </section>
       </form>
       <aside className="h-fit space-y-3 rounded-xl border border-primary bg-card p-5 shadow-glow md:sticky md:top-24">
         <h2 className="font-display text-3xl">Resumo</h2>
         <Row k="Subtotal" v={brl(subtotal)} />
-        <Row k={selected.type === "pickup" ? "Retirada" : "Entrega"} v={fee === 0 ? "Grátis" : brl(fee)} />
+        <Row k="Entrega" v={fee === 0 ? "Grátis" : brl(fee)} />
         <Row k="Prazo" v={selected.eta} />
         <div className="border-t border-border pt-3"><Row k="Total" v={brl(total)} bold /></div>
-        <Button form="checkout" type="submit" size="lg" className="w-full">Confirmar pedido</Button>
-        <p className="text-center text-xs text-muted-foreground">Pagamento combinado na entrega ou retirada.</p>
+        <Button form="checkout" type="submit" size="lg" className="w-full">Enviar pedido no WhatsApp</Button>
+        <p className="text-center text-xs text-muted-foreground">Pagamento combinado na entrega.</p>
       </aside>
     </main>
   );
