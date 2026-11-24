@@ -4,7 +4,7 @@ import { Bike, Store, Plus } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png.asset.json";
 import { Button } from "@/components/ui/button";
-import { CATEGORIES, PRODUCTS } from "@/lib/products";
+import { CATEGORIES, PRODUCTS, flavorsFor, type Product } from "@/lib/products";
 import { brl, FREE_DELIVERY_FROM } from "@/lib/delivery";
 import { useCart } from "@/lib/cart";
 
@@ -24,8 +24,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [cat, setCat] = useState("Todos");
-  const { add } = useCart();
-  const list = cat === "Todos" ? PRODUCTS : PRODUCTS.filter((p) => p.category === cat);
+  const groups = cat === "Todos" ? CATEGORIES.slice(1) : [cat];
   return (
     <main className="mx-auto max-w-6xl px-4 pb-16">
       <section className="flex flex-col items-center gap-6 py-10 text-center md:flex-row md:text-left">
@@ -44,23 +43,39 @@ function Index() {
           <button key={c} onClick={() => setCat(c)} className={`shrink-0 rounded-full border px-4 py-1.5 text-sm transition ${c === cat ? "border-primary bg-primary text-primary-foreground shadow-glow" : "border-border text-muted-foreground"}`}>{c}</button>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5">
-        {list.map((p) => (
-          <article key={p.id} className="glow-border flex flex-col rounded-xl bg-card p-4 transition">
-            <div className="mb-3 grid aspect-square place-items-center rounded-lg bg-accent">
-              <span className="font-display text-4xl text-primary text-glow">{p.category}</span>
-            </div>
-            {p.tag && <span className="mb-1 w-fit rounded bg-primary/20 px-2 py-0.5 text-xs text-primary-glow">{p.tag}</span>}
-            <h2 className="flex-1 text-sm font-semibold md:text-base">{p.name}</h2>
-            <div className="mt-3 flex items-center justify-between gap-2">
-              <span className="font-bold">{brl(p.price)}</span>
-              <Button size="icon" aria-label={`Adicionar ${p.name}`} onClick={() => { add(p.id); toast.success("Adicionado ao carrinho"); }}><Plus /></Button>
-            </div>
-          </article>
-        ))}
-      </div>
+      {groups.map((g) => (
+        <section key={g} className="mb-10">
+          <h2 className="mb-4 font-display text-4xl tracking-wide text-glow">{g}</h2>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5">
+            {PRODUCTS.filter((p) => p.category === g).map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
+        </section>
+      ))}
       <div className="mt-10 text-center"><Button asChild size="lg"><Link to="/checkout">Ver carrinho</Link></Button></div>
       <p className="mt-10 text-center text-xs text-muted-foreground">Venda proibida para menores de 18 anos.</p>
     </main>
+  );
+}
+
+function ProductCard({ p }: { p: Product }) {
+  const { add } = useCart();
+  const flavors = flavorsFor(p);
+  const [flavor, setFlavor] = useState(flavors[0] ?? "");
+  return (
+    <article className="glow-border flex flex-col rounded-xl bg-card p-4 transition">
+      <div className="mb-3 grid aspect-square place-items-center rounded-lg bg-accent">
+        <span className="text-center font-display text-3xl text-primary text-glow">{p.category}</span>
+      </div>
+      <h3 className="flex-1 text-sm font-semibold md:text-base">{p.name}</h3>
+      <label className="mt-2 text-xs text-muted-foreground">Sabor
+        <select value={flavor} onChange={(e) => setFlavor(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground">
+          {flavors.map((f) => <option key={f}>{f}</option>)}
+        </select>
+      </label>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="font-bold">{brl(p.price)}</span>
+        <Button size="icon" aria-label={`Adicionar ${p.name}`} onClick={() => { add(p.id, flavor); toast.success(`${p.name} (${flavor}) adicionado`); }}><Plus /></Button>
+      </div>
+    </article>
   );
 }

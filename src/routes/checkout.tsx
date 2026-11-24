@@ -41,7 +41,7 @@ function Checkout() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const msg = [`Olá! Sou ${name} e quero fazer um pedido:`, ...lines.map((l) => `• ${l.qty}x ${l.product.name} - ${brl(l.product.price * l.qty)}`), `Entrega: ${selected.label} (${fee === 0 ? "grátis" : brl(fee)}, ${selected.eta})`, `Endereço: ${address}`, `Total: ${brl(total)}`].join("\n");
+    const msg = [`Olá! Sou ${name} e quero fazer um pedido:`, ...lines.map((l) => `• ${l.qty}x ${l.product.name} (${l.flavor}) - ${brl(l.product.price * l.qty)}`), `Entrega: ${selected.label} (${fee === 0 ? "grátis" : brl(fee)}, ${selected.eta})`, `Endereço: ${address}`, `Total: ${brl(total)}`].join("\n");
     window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
     toast.success("Pedido enviado pelo WhatsApp!");
     clear();
@@ -53,12 +53,12 @@ function Checkout() {
         <h1 className="font-display text-5xl text-glow">Finalizar pedido</h1>
         <section className="space-y-3 rounded-xl border border-border bg-card p-4">
           {lines.map((l) => (
-            <div key={l.product.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-              <div className="min-w-0"><p className="truncate text-sm font-semibold">{l.product.name}</p><p className="text-xs text-muted-foreground">{brl(l.product.price)}</p></div>
+            <div key={l.key} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+              <div className="min-w-0"><p className="truncate text-sm font-semibold">{l.product.name}</p><p className="text-xs text-muted-foreground">Sabor: {l.flavor} · {brl(l.product.price)}</p></div>
               <div className="flex items-center gap-2">
-                <Button type="button" size="icon" variant="outline" aria-label="Diminuir" onClick={() => setQty(l.product.id, l.qty - 1)}><Minus /></Button>
+                <Button type="button" size="icon" variant="outline" aria-label="Diminuir" onClick={() => setQty(l.key, l.qty - 1)}><Minus /></Button>
                 <span className="w-6 text-center">{l.qty}</span>
-                <Button type="button" size="icon" variant="outline" aria-label="Aumentar" onClick={() => setQty(l.product.id, l.qty + 1)}><Plus /></Button>
+                <Button type="button" size="icon" variant="outline" aria-label="Aumentar" onClick={() => setQty(l.key, l.qty + 1)}><Plus /></Button>
               </div>
             </div>
           ))}

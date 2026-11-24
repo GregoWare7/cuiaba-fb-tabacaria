@@ -46,3 +46,5 @@ export const PRODUCTS: Product[] = [
   { id: "p42", name: "Kit Oxbar 32K", category: "Oxbar", price: 125 },
   { id: "p43", name: "Bateria Oxbar 32K", category: "Oxbar", price: 60 },
 ];
+export const DEFAULT_FLAVORS = ["Menta Ice", "Melancia Ice", "Morango Ice", "Uva Ice", "Blueberry Ice", "Maracujá", "Manga", "Pêssego", "Banana Ice", "Limão"];
+export const flavorsFor = (_p: Product) => DEFAULT_FLAVORS;
